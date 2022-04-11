@@ -24,7 +24,7 @@ scrape_configs:
            host_id:
            cluster_id:
         - match:
-            selector: '{service="bootstrap|agent"}'
+            selector: '{service=~"bootkube|agent"}'
             stages:
             - regex:
                 expression: '(?P<time>\S+\s\d+\s\S+?) (?P<hostname>\S+?) (?P<systemd_service>\S+?)\[\S+\]: (?P<message>.*)'
