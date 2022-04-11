@@ -23,16 +23,31 @@ scrape_configs:
            service:
            host_id:
            cluster_id:
-        - regex:
-            expression: '(?P<time>\S+\s\d+\s\S+?) (?P<hostname>\S+?) (?P<systemd_service>\S+?)\[\S+\]: (?P<message>.*)'
-        - timestamp:
-            source: time
-            format: Jan 02 15:04:05
-        - labels:
-            hostname:
-            systemd_service:
-        - output:
-            source: message
+        - match:
+            selector: '{service="bootstrap|agent"}'
+            stages:
+            - regex:
+                expression: '(?P<time>\S+\s\d+\s\S+?) (?P<hostname>\S+?) (?P<systemd_service>\S+?)\[\S+\]: (?P<message>.*)'
+            - timestamp:
+                source: time
+                format: Jan 02 15:04:05
+            - labels:
+                hostname:
+                systemd_service:
+            - output:
+                source: message
+        - match:
+            selector: '{service="installer"}'
+            stages:
+            - regex:
+                expression: 'time="(?P<timestamp>[\w+T\d-:.Z]+)" level=(?P<level>[a-zA-Z]+) msg="(?P<msg>.+)"'
+            - timestamp:
+                source: timestamp
+                format: RFC3339Nano
+            - labels:
+                level:
+            - output:
+                source: msg
 - job_name: controller
   static_configs:
   - targets:
@@ -45,12 +60,19 @@ scrape_configs:
         selector: '{job="controller-logs"}'
         stages:
         - regex:
-           source: filename
-           expression: '/var/log/cluster_(?P<cluster_id>\S+?)_logs/.logs'
+            source: filename
+            expression: '/var/log/cluster_(?P<cluster_id>\S+?)_logs/.*'
         - labels:
-           service:
-           host_id:
-           cluster_id:
+            cluster_id:
+        - regex:
+            expression: 'time="(?P<timestamp>[\w+T\d-:.Z]+)" level=(?P<level>[a-zA-Z]+) msg="(?P<msg>.+)"'
+        - timestamp:
+            source: timestamp
+            format: RFC3339Nano
+        - labels:
+            level:
+        - output:
+            source: msg
 - job_name: installer-gather
   static_configs:
   - targets:
@@ -66,7 +88,7 @@ scrape_configs:
            source: filename
            expression: '/var/log/cluster_(?P<cluster_id>\S+?)_logs/'
         - labels:
-           cluster_id: 
+           cluster_id:
 - job_name: must-gather
   static_configs:
   - targets:
