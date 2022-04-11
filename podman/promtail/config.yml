@@ -23,6 +23,16 @@ scrape_configs:
            service:
            host_id:
            cluster_id:
+        - regex:
+            expression: '(?P<time>\S+\s\d+\s\S+?) (?P<hostname>\S+?) (?P<systemd_service>\S+?)\[\S+\]: (?P<message>.*)'
+        - timestamp:
+            source: time
+            format: Jan 02 15:04:05
+        - labels:
+            hostname:
+            systemd_service:
+        - output:
+            source: message
 - job_name: controller
   static_configs:
   - targets:
@@ -92,14 +102,17 @@ scrape_configs:
   - json:
       expressions:
         output: message
-        timestamp: event_time
+        event_time: event_time
         cluster_id: cluster_id
-        name: name
-        severity: severity
+        event_name: name
+        event_severity: severity
+  - timestamp:
+      source: event_time
+      format: RFC3339Nano
   - labels:
       cluster_id:
-      name:
-      severity:
+      event_name:
+      event_severity:
 - job_name: infraenv-events
   static_configs:
   - targets:
@@ -119,15 +132,18 @@ scrape_configs:
   - json:
       expressions:
         output: message
-        timestamp: event_time
+        event_time: event_time
         cluster_id: cluster_id
         host_id: host_id
         infra_env_id: infra_env_id
-        name: name
-        severity: severity
+        event_name: name
+        event_severity: severity
+  - timestamp:
+      source: event_time
+      format: RFC3339Nano
   - labels:
       cluster_id:
-      name:
-      severity:
+      event_name:
+      event_severity:
       host_id:
       infra_env_id:
