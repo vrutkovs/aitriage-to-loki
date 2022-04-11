@@ -81,10 +81,25 @@ scrape_configs:
       job: cluster-events
       __path__: /var/log/artifacts/cluster_*_events.json
   pipeline_stages:
+  - multiline:
+      firstline: '(^\W+\{(.*))|([^\}\s]\s$)'
+  - replace:
+      expression: '(\n)'
+      replace: ''
+  - replace:
+      expression: '(\},)'
+      replace: '}'
   - json:
       expressions:
         output: message
         timestamp: event_time
+        cluster_id: cluster_id
+        name: name
+        severity: severity
+  - labels:
+      cluster_id:
+      name:
+      severity:
 - job_name: infraenv-events
   static_configs:
   - targets:
@@ -93,7 +108,26 @@ scrape_configs:
       job: infraenv-events
       __path__: /var/log/artifacts/infraenv_*_events.json
   pipeline_stages:
+  - multiline:
+      firstline: '(^\W+\{(.*))|([^\}\s]\s$)'
+  - replace:
+      expression: '(\n)'
+      replace: ''
+  - replace:
+      expression: '(\},)'
+      replace: '}'
   - json:
       expressions:
         output: message
         timestamp: event_time
+        cluster_id: cluster_id
+        host_id: host_id
+        infra_env_id: infra_env_id
+        name: name
+        severity: severity
+  - labels:
+      cluster_id:
+      name:
+      severity:
+      host_id:
+      infra_env_id:
