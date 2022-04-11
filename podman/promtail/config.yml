@@ -11,7 +11,7 @@ scrape_configs:
       - localhost
     labels:
       job: hosts-logs
-      __path__: /var/log/cluster_*_logs/logs_host_*/*.logs
+      __path__: /var/log/cluster_*_logs/logs_host_*/{agent,bootkube,installer}.logs
   pipeline_stages:
     - match:
         selector: '{job="hosts-logs"}'
