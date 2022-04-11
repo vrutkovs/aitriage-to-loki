@@ -1,0 +1,78 @@
+server:
+  disable: true
+clients:
+  - url: http://127.0.0.1:3100/api/prom/push
+server:
+  http_listen_port: 0
+  grpc_listen_port: 0
+positions:
+  filename: /tmp/positions.yaml
+scrape_configs:
+- job_name: hosts
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: hosts-logs
+      __path__: /var/log/cluster_*_logs/logs_host_*/*.logs
+  pipeline_stages:
+    - match:
+        selector: '{job="hosts-logs"}'
+        stages:
+        - regex:
+           source: filename
+           expression: '/var/log/cluster_(?P<cluster_id>\\S+?)_logs/logs_host_(?P<host_id>\\S+?)/(?P<service>\\S+?).logs'
+        - labels:
+           service:
+           host_id:
+           cluster_id: 
+- job_name: controller
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: controller-logs
+      __path__: /var/log/cluster_*_logs/assisted-installer-controller*.logs
+  pipeline_stages:
+    - match:
+        selector: '{job="hosts-logs"}'
+        stages:
+        - regex:
+           source: filename
+           expression: '/var/log/cluster_(?P<cluster_id>\\S+?)_logs/.logs'
+        - labels:
+           service:
+           host_id:
+           cluster_id: 
+- job_name: installer-gather
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: installer-gather
+      __path__: /var/log/*/log-bundle*/**/*.{txt,log,inspect}
+  pipeline_stages:
+    - match:
+        selector: '{job="installer-gather"}'
+        stages:
+        - regex:
+           source: filename
+           expression: '/var/log/cluster_(?P<cluster_id>\\S+?)_logs/'
+        - labels:
+           cluster_id: 
+- job_name: must-gather
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: must-gather
+      __path__: /var/log/*/must-gather*/**/*.{txt,log,inspect,json,yaml}
+  pipeline_stages:
+    - match:
+        selector: '{job="must-gather"}'
+        stages:
+        - regex:
+           source: filename
+           expression: '/var/log/cluster_(?P<cluster_id>\\S+?)_logs/'
+        - labels:
+           cluster_id: 
