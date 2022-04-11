@@ -31,8 +31,8 @@ spec:
       name: promtail-config
     - mountPath: /run/promtail:Z
       name: promtail-data
-    - mountPath: /tmp/log:z
-      name: diff-data
+    - mountPath: /var/log:z
+      name: log-data
   volumes:
   - hostPath:
       path: podman/loki
@@ -47,14 +47,14 @@ spec:
       type: Directory
     name: grafana-config
   - hostPath:
-      path: foo
+      path: foo/promtail-data
       type: Directory
     name: promtail-data
   - hostPath:
-      path: foo
+      path: foo/loki-data
       type: Directory
     name: loki-data
   - hostPath:
       path: foo
       type: Directory
-    name: diff-data
+    name: log-data

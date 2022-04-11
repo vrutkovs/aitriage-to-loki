@@ -2,6 +2,7 @@
 set -euo pipefail
 set -o xtrace
 BASE_DIR="${BASE_DIR:-/tmp/loki_logs}"
+mkdir -p "${BASE_DIR}"
 
 if [ -z "${1}" ]; then
 	echo "Usage: unpack.sh <cluster_<id>_logs.tar url>"
@@ -56,11 +57,13 @@ pushd ${WORK_DIR}
 popd
 
 #Start loki / promtail / grafana pod
-rm -rf "${WORK_DIR}/podman"
-cp -rvf "$(pwd)/podman" "${WORK_DIR}/podman"
+rm -rf "${BASE_DIR}/podman"
+cp -rvf "$(pwd)/podman" "${BASE_DIR}/podman"
+mkdir -p "${BASE_DIR}/promtail-data"
+mkdir -p "${BASE_DIR}/loki-data"
 
-sed -i "s;foo;${WORK_DIR};g" "${WORK_DIR}/podman/pod.yml"
+sed -i "s;foo;${BASE_DIR};g" "${BASE_DIR}/podman/pod.yml"
 podman pod rm -f aitriage-to-loki || true
-podman play kube "${WORK_DIR}/podman/pod.yml"
+podman play kube "${BASE_DIR}/podman/pod.yml"
 
 echo "Open Grafana at http://localhost:3000/explore?orgId=1&left=%7B%22datasource%22:%22Loki%22,%22queries%22:%5B%7B%22refId%22:%22A%22%7D%5D,%22range%22:%7B%22from%22:%22now-24h%22,%22to%22:%22now%22%7D%7D"
