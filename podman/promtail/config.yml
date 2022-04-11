@@ -23,13 +23,6 @@ scrape_configs:
            service:
            host_id:
            cluster_id:
-        - regex:
-            expression: '(?P<month>\S+?) (?P<day>\w+?) (?P<time>\S+?) (?P<hostname>\S+?) (?P<service>\S+?)\[\S+\]: (?P<message>.*)'
-        - labels:
-           hostname:
-           service:
-        - output:
-            source: message
 - job_name: controller
   static_configs:
   - targets:
@@ -47,7 +40,7 @@ scrape_configs:
         - labels:
            service:
            host_id:
-           cluster_id: 
+           cluster_id:
 - job_name: installer-gather
   static_configs:
   - targets:
@@ -79,4 +72,4 @@ scrape_configs:
            source: filename
            expression: '/var/log/cluster_(?P<cluster_id>\S+?)_logs/'
         - labels:
-           cluster_id: 
+           cluster_id:
