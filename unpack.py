@@ -49,9 +49,13 @@ def newCollectorUrls(url_base):
         raise Exception("Failed to find infra events JSON")
     return cURL
 
-collectorURLs = newCollectorUrls(sys.argv[1])
+baseURL = sys.argv[1]
+cluster_id = baseURL.split("/")[-1].split("_")[-1]
+print(f"Fetching {cluster_id} info from {baseURL}")
 
-dest_dir = tempfile.mkdtemp(prefix="loki_logs_")
+collectorURLs = newCollectorUrls(baseURL)
+dest_dir = os.path.join("/tmp", "aitriage-loki", cluster_id)
+os.makedirs(dest_dir)
 artifacts_dir = os.path.join(dest_dir, "artifacts")
 
 print(f"Fetching files to {artifacts_dir}")
@@ -87,16 +91,4 @@ if collectorURLs.clusterLogs:
         file.close()
 
 
-print("Starting pod")
-# Make sure configmap has path to dest_dir
-shutil.copytree("podman", os.path.join(dest_dir, "podman"))
-os.mkdir(os.path.join(dest_dir, "promtail-data"))
-os.mkdir(os.path.join(dest_dir, "loki-data"))
-
-pod_path = os.path.join(dest_dir, "podman/pod.yml")
-run(["sed", "-i", f"s;foo;{dest_dir};g", pod_path])
-
-run(["podman", "pod", "rm", "-f", "aitriage-to-loki"])
-run(["podman", "play", "kube", pod_path])
-
-print(f"Grafana URL: http://localhost:3000/explore")
+print("Logs extracted")

@@ -11,14 +11,14 @@ scrape_configs:
       - localhost
     labels:
       job: hosts-logs
-      __path__: /var/log/cluster_*_logs/logs_host_*/{agent,bootkube,installer}.logs
+      __path__: /var/log/*/cluster_*_logs/logs_host_*/{agent,bootkube,installer}.logs
   pipeline_stages:
     - match:
         selector: '{job="hosts-logs"}'
         stages:
         - regex:
            source: filename
-           expression: '/var/log/cluster_(?P<cluster_id>\S+?)_logs/logs_host_(?P<host_id>\S+?)/(?P<service>\S+?).logs'
+           expression: '/var/log/.*/cluster_(?P<cluster_id>\S+?)_logs/logs_host_(?P<host_id>\S+?)/(?P<service>\S+?).logs'
         - labels:
            service:
            host_id:
@@ -54,14 +54,14 @@ scrape_configs:
       - localhost
     labels:
       job: controller-logs
-      __path__: /var/log/cluster_*_logs/assisted-installer-controller*.logs
+      __path__: /var/log/*/cluster_*_logs/assisted-installer-controller*.logs
   pipeline_stages:
     - match:
         selector: '{job="controller-logs"}'
         stages:
         - regex:
             source: filename
-            expression: '/var/log/cluster_(?P<cluster_id>\S+?)_logs/.*'
+            expression: '/var/log/.*/cluster_(?P<cluster_id>\S+?)_logs/.*'
         - labels:
             cluster_id:
         - regex:
@@ -79,14 +79,14 @@ scrape_configs:
       - localhost
     labels:
       job: installer-gather
-      __path__: /var/log/*/log-bundle*/**/*.{txt,log,inspect}
+      __path__: /var/log/*/*/log-bundle*/**/*.{txt,log,inspect}
   pipeline_stages:
     - match:
         selector: '{job="installer-gather"}'
         stages:
         - regex:
            source: filename
-           expression: '/var/log/cluster_(?P<cluster_id>\S+?)_logs/'
+           expression: '/var/log/.*/cluster_(?P<cluster_id>\S+?)_logs/'
         - labels:
            cluster_id:
 - job_name: must-gather
@@ -95,14 +95,14 @@ scrape_configs:
       - localhost
     labels:
       job: must-gather
-      __path__: /var/log/*/must-gather*/**/*.{txt,log,inspect,json,yaml}
+      __path__: /var/log/*/*/must-gather*/**/*.{txt,log,inspect,json,yaml}
   pipeline_stages:
     - match:
         selector: '{job="must-gather"}'
         stages:
         - regex:
            source: filename
-           expression: '/var/log/cluster_(?P<cluster_id>\S+?)_logs/'
+           expression: '/var/log/*/cluster_(?P<cluster_id>\S+?)_logs/'
         - labels:
            cluster_id:
 - job_name: cluster-events
@@ -111,7 +111,7 @@ scrape_configs:
       - localhost
     labels:
       job: cluster-events
-      __path__: /var/log/artifacts/cluster_*_events.json
+      __path__: /var/log/*/artifacts/cluster_*_events.json
   pipeline_stages:
   - multiline:
       firstline: '(^\W+\{(.*))|([^\}\s]\s$)'
@@ -141,7 +141,7 @@ scrape_configs:
       - localhost
     labels:
       job: infraenv-events
-      __path__: /var/log/artifacts/infraenv_*_events.json
+      __path__: /var/log/*/artifacts/infraenv_*_events.json
   pipeline_stages:
   - multiline:
       firstline: '(^\W+\{(.*))|([^\}\s]\s$)'
