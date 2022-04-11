@@ -2,9 +2,6 @@ server:
   disable: true
 clients:
   - url: http://127.0.0.1:3100/api/prom/push
-server:
-  http_listen_port: 0
-  grpc_listen_port: 0
 positions:
   filename: /tmp/positions.yaml
 scrape_configs:
