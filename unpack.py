@@ -81,6 +81,7 @@ if collectorURLs.clusterLogs:
         if not os.path.isfile(filepath):
             continue
 
+        print(f"Extracting {filename}")
         file = tarfile.open(filepath)
         file.extractall(logs_dst_dir)
         file.close()
