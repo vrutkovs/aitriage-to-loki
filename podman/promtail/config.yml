@@ -73,3 +73,27 @@ scrape_configs:
            expression: '/var/log/cluster_(?P<cluster_id>\S+?)_logs/'
         - labels:
            cluster_id:
+- job_name: cluster-events
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: cluster-events
+      __path__: /var/log/artifacts/cluster_*_events.json
+  pipeline_stages:
+  - json:
+      expressions:
+        output: message
+        timestamp: event_time
+- job_name: infraenv-events
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: infraenv-events
+      __path__: /var/log/artifacts/infraenv_*_events.json
+  pipeline_stages:
+  - json:
+      expressions:
+        output: message
+        timestamp: event_time
