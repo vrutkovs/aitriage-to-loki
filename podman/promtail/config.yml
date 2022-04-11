@@ -22,7 +22,14 @@ scrape_configs:
         - labels:
            service:
            host_id:
-           cluster_id: 
+           cluster_id:
+        - regex:
+            expression: '(?P<month>\S+?) (?P<day>\w+?) (?P<time>\S+?) (?P<hostname>\S+?) (?P<service>\S+?)\[\S+\]: (?P<message>.*)'
+        - labels:
+           hostname:
+           service:
+        - output:
+            source: message
 - job_name: controller
   static_configs:
   - targets:
