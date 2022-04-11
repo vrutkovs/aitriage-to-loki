@@ -1,6 +1,7 @@
 import os
 import os.path
 import sys
+import re
 import tarfile
 import tempfile
 import json
@@ -10,7 +11,7 @@ import urllib.request
 from subprocess import run
 
 if len(sys.argv) < 2:
-    print("Usage: unpack.py <log collector URL>")
+    print("Usage: unpack.py http://assisted-logs-collector.usersys.redhat.com/files/<log collector hash>")
     sys.exit(1)
 
 
@@ -19,16 +20,38 @@ class CollectorURLs:
     clusterLogs = None
     infraEnvJSON = None
 
-collector_url_base = os.path.abspath(sys.argv[1])
-# TODO: implement me
-#collectorURLs = NewCollectorURLs(collector_url_base)
+def newCollectorUrls(url_base):
+    cURL = CollectorURLs()
 
-collectorURLs = CollectorURLs()
-collectorURLs.clusterEventsJSON = "http://assisted-logs-collector.usersys.redhat.com/files/2022-04-09_18:19:34_113b2bad-f09d-4b17-a37b-c06353df2253/cluster_113b2bad-f09d-4b17-a37b-c06353df2253_events.json"
-collectorURLs.clusterLogs = "http://assisted-logs-collector.usersys.redhat.com/files/2022-04-09_18:19:34_113b2bad-f09d-4b17-a37b-c06353df2253/cluster_113b2bad-f09d-4b17-a37b-c06353df2253_logs.tar"
-collectorURLs.infraEnvJSON = "http://assisted-logs-collector.usersys.redhat.com/files/2022-04-09_18:19:34_113b2bad-f09d-4b17-a37b-c06353df2253/infraenv_9edddd51-2060-47d6-9516-17cd66e2d20e_events.json"
+    cluster_events_pattern = re.compile(r'cluster_\S+_events.json')
+    infraenv_events_pattern = re.compile(r'infraenv_\S+_events.json')
 
-dest_dir = tempfile.mkdtemp(prefix="loki_logs")
+    with urllib.request.urlopen(url_base) as response:
+        data = response.read()
+        encoding = response.info().get_content_charset('utf-8')
+        JSON_object = json.loads(data.decode(encoding))
+        for fileObj in JSON_object:
+            name = fileObj.get("name")
+            if not name:
+                continue
+            if name.endswith("_logs.tar"):
+                cURL.clusterLogs = url_base + "/" + name
+            if cluster_events_pattern.match(name):
+                cURL.clusterEventsJSON = url_base + "/" + name
+            if infraenv_events_pattern.match(name):
+                cURL.infraEnvJSON = url_base + "/" + name
+
+    if not cURL.clusterEventsJSON:
+        raise Exception("Failed to find cluster events JSON")
+    if not cURL.clusterLogs:
+        raise Exception("Failed to find cluster logs archive")
+    if not cURL.infraEnvJSON:
+        raise Exception("Failed to find infra events JSON")
+    return cURL
+
+collectorURLs = newCollectorUrls(sys.argv[1])
+
+dest_dir = tempfile.mkdtemp(prefix="loki_logs_")
 artifacts_dir = os.path.join(dest_dir, "artifacts")
 
 print(f"Fetching files to {artifacts_dir}")
@@ -59,7 +82,6 @@ if collectorURLs.clusterLogs:
             continue
 
         file = tarfile.open(filepath)
-        print(f"{logs_dst_dir} - {filename} - {filepath}")
         file.extractall(logs_dst_dir)
         file.close()
 
