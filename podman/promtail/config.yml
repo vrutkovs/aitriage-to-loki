@@ -18,7 +18,7 @@ scrape_configs:
         stages:
         - regex:
            source: filename
-           expression: '/var/log/cluster_(?P<cluster_id>\\S+?)_logs/logs_host_(?P<host_id>\\S+?)/(?P<service>\\S+?).logs'
+           expression: '/var/log/cluster_(?P<cluster_id>\S+?)_logs/logs_host_(?P<host_id>\S+?)/(?P<service>\S+?).logs'
         - labels:
            service:
            host_id:
@@ -32,11 +32,11 @@ scrape_configs:
       __path__: /var/log/cluster_*_logs/assisted-installer-controller*.logs
   pipeline_stages:
     - match:
-        selector: '{job="hosts-logs"}'
+        selector: '{job="controller-logs"}'
         stages:
         - regex:
            source: filename
-           expression: '/var/log/cluster_(?P<cluster_id>\\S+?)_logs/.logs'
+           expression: '/var/log/cluster_(?P<cluster_id>\S+?)_logs/.logs'
         - labels:
            service:
            host_id:
@@ -54,7 +54,7 @@ scrape_configs:
         stages:
         - regex:
            source: filename
-           expression: '/var/log/cluster_(?P<cluster_id>\\S+?)_logs/'
+           expression: '/var/log/cluster_(?P<cluster_id>\S+?)_logs/'
         - labels:
            cluster_id: 
 - job_name: must-gather
@@ -70,6 +70,6 @@ scrape_configs:
         stages:
         - regex:
            source: filename
-           expression: '/var/log/cluster_(?P<cluster_id>\\S+?)_logs/'
+           expression: '/var/log/cluster_(?P<cluster_id>\S+?)_logs/'
         - labels:
            cluster_id: 
